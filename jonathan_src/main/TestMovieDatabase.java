@@ -45,6 +45,7 @@ public class TestMovieDatabase{
     actors.add(r_gosling);
     Actors e_stone = new Actors("Emma Stone", "USA", "1980/06/03");
     actors.add(e_stone);
+    active_account = test_admin;
 
     System.out.println("Welcome to IthsMDB!");
     System.out.println("Product of PUZZLE" + "\n" + "------");

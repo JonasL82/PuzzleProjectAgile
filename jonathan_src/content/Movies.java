@@ -84,9 +84,8 @@ public class Movies{
     public void changeTitle(String title){
       this.title = title;
     }
-    public void changeYear(int year){
-      short new_year = (short)year;
-      this.year = new_year;
+    public void changeYear(int new_year){
+      this.year = (short)new_year;
     }
     public void changePlot(String plot){
       this.plot = plot;
@@ -112,11 +111,20 @@ public class Movies{
     }
     @Override
     public String toString(){
+      String movie_cast = "";
+      if (cast.isEmpty()) {
+        movie_cast = "No cast listed";
+      }
+      else{
+        for (int i = 0; i<cast.size(); i++) {
+          movie_cast = movie_cast+cast.get(i).name()+" - Role" + "\n";
+        }
+      }
       return "Title: " + title + "\n" + "Production year: " + year + "\n" + "Genre: " + genre + "\n" +
       "Language: " + language + "\n" + "Plot: " + plot + "\n" + "Directed by: " + director + "\n"
       + "Written by: " + scriptwriter + "\n" + "Release: " + release_dates +
-       "\n" + "Age Limit: " + age_limit + "\n" + "ID Nr.: " + id_nr + "\n"
-        + "------";
+       "\n" + "Age Limit: " + age_limit + "\n" + "ID Nr.: " + id_nr + "\n" + "Cast: " + (cast.isEmpty()?"":"\n") +
+       movie_cast + (cast.isEmpty()?"\n":"") + "------";
 /*
       return "Title: " + title + "\n" + "Production year: " + year + "\n" + "Genre: " + genre + "\n" +
       "Language: " + language + "\n" + "Plot: " + plot + "\n" + "Directed by: " + director + "\n"

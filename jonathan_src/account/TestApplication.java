@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import content.*;
 import people.*;
+import util.data_utils.DataCheckUtils;
 public class TestApplication {
 
   ArrayList<Account> accounts;
@@ -11,27 +12,29 @@ public class TestApplication {
     accounts = new ArrayList<Account>();
   }
 
-  public void runApplication(){
-    boolean running = true;
-    Scanner sc = new Scanner(System.in);
-    while (running){
-      System.out.println("Testing the account function");
-      System.out.println("1. Create Account" + "\n" + "2. List Accounts" + "\n"
-                          + "3. Quit");
-      byte command = sc.nextByte();
-      switch (command) {
-        case 1: accounts.add(createAccount());
-                break;
-        case 2: listAccounts();
-                break;
-        case 3: sc.close();
-                System.out.println("Quitting...");
-                running = false;
-                break;
-        default: System.out.println("Invalid entry. Enter new command");
+  /*  public void runApplication(){
+      boolean running = true;
+      Scanner sc = new Scanner(System.in);
+      while (running){
+        System.out.println("Testing the account function");
+        System.out.println("1. Create Account" + "\n" + "2. List Accounts" + "\n"
+                            + "3. Quit");
+        byte command = sc.nextByte();
+        switch (command) {
+          case 1: accounts.add(createAccount());
+                  break;
+          case 2: listAccounts();
+                  break;
+          case 3: sc.close();
+                  System.out.println("Quitting...");
+                  running = false;
+                  break;
+          default: System.out.println("Invalid entry. Enter new command");
+        }
       }
-    }
-  }
+    }*/
+
+
 
   //Från Account START
   public Account createAccount(){
@@ -39,7 +42,22 @@ public class TestApplication {
     String email, username, password;
     System.out.println("Enter your username: ");
     //if (sc.hasNext()){
-      username = sc.next();
+    boolean username_exists = true;
+    int us_found = 0;
+    do {
+      username_exists = false;
+      username = sc.nextLine();
+      for (int i = 0; i<accounts.size(); i++){
+        if (username.equals(accounts.get(i).getUsername())){
+          username_exists = true;
+          us_found++;
+          if(us_found>0){
+            System.out.println("Username already exists. Please enter a new one");
+          }
+        }
+      }
+    } while (username_exists == true);
+
     //}
     //else username = "Username fail";
     System.out.println("Enter your email: ");
@@ -50,7 +68,7 @@ public class TestApplication {
     }while (checkEmail(email)==false);
     */
     //if (sc.hasNext()){
-      email = sc.next(); //Lägg till check för om addressen är rätt formaterad
+      email = sc.nextLine(); //Lägg till check för om addressen är rätt formaterad
     //}
     //else email = "Email fail";
     //password = ""; //Se slutet av enterAccountPassword
@@ -325,21 +343,56 @@ public class TestApplication {
         case 1: //Title
           System.out.println("Current title: " + edit_movie.title());
           System.out.print("New title: ");
-          String new_title = sc2.nextLine();
+          String new_title;
+          int new_title_wrong = 0;
+          do {
+            if (new_title_wrong>0) {
+              System.out.println("Invalid title. Please re-enter");
+            }
+            new_title = sc2.nextLine();
+            new_title_wrong++;
+          } while (new_title.equals("") || new_title.equals(null));
+
           edit_movie.changeTitle(new_title);
           System.out.println("Title changed.");
           break;
         case 2: //Year
-          System.out.println("Current title: " + edit_movie.year());
+          System.out.println("Current year: " + edit_movie.year());
           System.out.print("New year: ");
-          int new_year = sc2.nextInt();
-          edit_movie.changeYear(new_year);
+          boolean valid_prodyear = false;
+          String new_year_string;
+          int new_year_int = 0;
+          int new_year_miss = 0;
+          do {
+            Scanner sc3 = new Scanner(System.in);
+            if (new_year_int<1878 && new_year_miss>0) {
+              System.out.println("There was a problem with your entry. Please re-enter");
+            }
+            new_year_miss++;
+            new_year_string=sc3.nextLine();
+            valid_prodyear = DataCheckUtils.checkProdyearForShort(new_year_string);
+            if (valid_prodyear==true){
+              try {
+                new_year_int = Integer.parseInt(new_year_string);
+              }catch (NumberFormatException nfe) {
+                new_year_int = 0;
+              }
+            }
+            else{
+              new_year_int = 0;
+            }
+          } while (new_year_int<1878 && valid_prodyear == false);
+          edit_movie.changeYear(new_year_int);
           System.out.println("Year changed.");
           break;
         case 3: //Genre
           System.out.println("Current genre: " + edit_movie.genre());
           System.out.print("New genre: ");
-          String new_genre = sc2.nextLine();
+          String new_genre;
+          do {
+            Scanner sc3 = new Scanner(System.in);
+            new_genre = sc3.nextLine();
+          } while (new_genre.equals("") || new_genre.equals(null));
           edit_movie.changeGenre(new_genre);
           System.out.println("Genre changed.");
           break;
@@ -395,23 +448,32 @@ public class TestApplication {
         case 6: //Change director
           System.out.println("Current director: " + edit_movie.director());
           System.out.print("New director: ");
-          String new_director = sc2.nextLine();
-          edit_movie.changeTitle(new_director);
+          String new_director = "";
+          do {
+            Scanner sc3 = new Scanner(System.in);
+            new_director = sc3.nextLine();
+          } while (new_director.equals("") || new_director.equals(null));
+          edit_movie.changeDirector(new_director);
           System.out.println("Director changed.");
           break;
         case 7: //Change scriptwriter
           System.out.println("Current scriptwriter: " + edit_movie.scriptwriter());
-          System.out.print("New title: ");
-          String new_scriptwriter = sc2.nextLine();
-          edit_movie.changeTitle(new_scriptwriter);
+          System.out.print("New screenwriter: ");
+          String new_scriptwriter = "";
+          do {
+            Scanner sc3 = new Scanner(System.in);
+            new_scriptwriter = sc3.nextLine();
+          } while (new_scriptwriter.equals("") || new_scriptwriter.equals(null));
+          edit_movie.changeScriptwriter(new_scriptwriter);
           System.out.println("Screenwriter changed.");
           break;
         case 8: //Change plot
           System.out.println("Current plot: " + "\n" + edit_movie.plot());
           System.out.print("New plot: ");
-          String new_plot;
+          String new_plot = "";
           do{
-            new_plot = sc2.nextLine();
+            Scanner sc3 = new Scanner(System.in);
+            new_plot = sc3.nextLine();
           }while(new_plot.length()>240 || new_plot.length()<1);
           edit_movie.changePlot(new_plot);
           System.out.println("Plot changed.");
@@ -419,7 +481,13 @@ public class TestApplication {
         case 9: //Change release date
           System.out.println("Current release date: " + edit_movie.release_dates());
           System.out.print("New release date: ");
-          String new_release = sc2.nextLine();
+          String new_release = "";
+          boolean new_release_ready = false;
+          do {
+            Scanner sc3 = new Scanner(System.in);
+            new_release = sc3.nextLine();
+            new_release_ready = DataCheckUtils.checkDateEntry(new_release);
+          } while (new_release_ready == false);
           edit_movie.changeReleaseDate(new_release);
           System.out.println("Release date changed.");
           break;
@@ -428,7 +496,8 @@ public class TestApplication {
           System.out.print("New age limit: ");
           int new_age_limit;
           do {
-            new_age_limit = sc2.nextInt();
+            Scanner sc3 = new Scanner(System.in);
+            new_age_limit = sc3.nextInt();
           } while (new_age_limit>90 && new_age_limit<0);
           edit_movie.changeAgeLimit(new_age_limit);
           System.out.println("Age limit changed.");

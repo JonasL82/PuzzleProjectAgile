@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import review.Review;
 import random.RandGen;
 import java.util.Scanner;
+import util.data_utils.DataCheckUtils;
 
 public class Account{
 
@@ -181,6 +182,7 @@ public class Account{
     String th = "Thriller";
     String my = "Mystery";
     String cr = "Crime";
+    String sh = "Superhero";
     ArrayList<String> genres = new ArrayList<String>();
     genres.add(ac); genres.add(dr); genres.add(co); genres.add(ho);
     genres.add(ro); genres.add(sf); genres.add(th); genres.add(my);
@@ -196,11 +198,34 @@ public class Account{
     String name, birthplace, date_of_birth;
     Scanner sc = new Scanner(System.in);
     System.out.println("Please enter the actor's name");
-    name = sc.nextLine();
+    int name_wrong = 0;
+    int birthplace_wrong = 0;
+    int birthdate_wrong = 0;
+    do {
+      if (name_wrong > 0) {
+        System.out.println("Invalid username entry");
+      }
+      name = sc.nextLine();
+      name_wrong++;
+    } while (name.equals("") || name.equals(null));
+
     System.out.println("Please enter the actor's date of birth (YYYY-MM-DD):");
-    date_of_birth = sc.nextLine();
+    do {
+      if (birthdate_wrong>0) {
+        System.out.println("Incorrect entry. Please check your formatting");
+      }
+      date_of_birth = sc.nextLine();
+      birthdate_wrong++;
+    } while (DataCheckUtils.checkDateEntry(date_of_birth)==false);
+
     System.out.println("Please enter the actor's place of birth:");
-    birthplace = sc.nextLine();
+    do {
+      if (birthplace_wrong > 0) {
+        System.out.println("Invalid birthplace entry");
+      }
+      birthplace = sc.nextLine();
+      birthdate_wrong++;
+    } while (birthplace.equals("") || birthplace.equals(null));
     Actors a = new Actors(name, birthplace, date_of_birth);
     return a;
   }
