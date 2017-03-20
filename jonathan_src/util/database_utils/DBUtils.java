@@ -1,8 +1,8 @@
-package jonathan_src.utils;
+package utils.database_utils;
 import java.sql.*;
 import java.io.File;
 
-public class JDBCUtils{
+public class DBUtils{
 
   private final static String DB_CONN_STR="jdbc:sqlite:MovieDatabase";
     private final static String DB_FILE="MovieDatabase"; // Used for debugging
@@ -15,9 +15,7 @@ public class JDBCUtils{
     }
     private static Connection con;
     private static DBUtils instance = new DBUtils();
-    private DBUtils(){
-      getConnection();
-    }
+
     /**
     * Singleton method to get the instance of this class.
     * @return The only instance of this class
@@ -153,7 +151,5 @@ public class JDBCUtils{
         System.err.print("Error issuing rollback: ");
         System.err.println(sqle);
       }
-    }
-
-  }
+}
 }

@@ -1,19 +1,25 @@
-package util;
+package utils.database_utils;
 import java.util.Scanner;
 import java.awt.*; //För KeyEvent
 public class EnterDataUtils{
 
-  private int id;
+  private String id;
+  //id = title of the movie
   private String name;
+  //name = genre of the movie
   private String url;
+  //url = rating of the movie
   private String server;
+  //server = Director of the movie
   /**
-   * @param name The name of the municipality
-   * @param url The URL of the municipality web page
-   * @param server The web server this municipality is running
+   *@param id = title of the movie
+   * @param name The genre of the movie
+   * @param url The rated of the movie(åldersgräns)
+   * @param server The Director this movie has.
    */
-  public Municipality(String name, String url,
-                      String server){
+  public EnterDataUtils(String name, String url,
+                      String server, String id){
+    this.id=id;
     this.name=name;
     this.url=url;
     this.server=server;
@@ -24,7 +30,7 @@ public class EnterDataUtils{
    * Returns the id of this Municipality. The ID could mean an internal id for an application creating a record of municipalities for instance.
    * @return the id of this Municipality as an int (or 0 if it's not been set)
    */
-  public int id(){return this.id;}
+  public String id(){return this.id;}
 
   /**
    * Returns the name of this Municipality
@@ -38,7 +44,7 @@ public class EnterDataUtils{
    * @return The URL of the municipality as a String
    *
    */
-  public String url(){return this.url; }
+  public String url(){return this.url;}
 
   /**
    * Returns the web server name of this Municipality
@@ -56,18 +62,9 @@ public class EnterDataUtils{
   @Override
   public String toString(){
     return name + " | " + url + " | " +
-      server + " | " +
-      (supportsHTTPS?"HTTPS support":"only HTTP");
+      server + " | " +  id;
   }
 
-
-  /**
-   * A mutator to set or change the ID of this Municipality. The id defaults to 0 while not set.
-   * @param id The new id as an int
-   */
-  public void setID(int id){
-    this.id=id;
-  }
 }
 
 
@@ -79,6 +76,5 @@ public class EnterDataUtils{
     int first_valid_entry = 0;
     boolean found_valid_entry = false;
     return first_valid_entry;
-    */
   }
-}
+    */

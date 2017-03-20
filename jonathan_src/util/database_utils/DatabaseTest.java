@@ -1,4 +1,4 @@
-package jonathan_src.utils;
+package utils.database_utils;
 import java.sql.*;
 
 public class DatabaseTest{
@@ -21,7 +21,7 @@ public class DatabaseTest{
       con = DriverManager.getConnection(DB_CONN_STR);
     }catch(Exception e){
       System.err.println("Error getting connection to " +
-                         DB_CONN_STR);
+      DB_CONN_STR);
     }
   }
   public boolean hasConnection(){
@@ -36,7 +36,7 @@ public class DatabaseTest{
         stm = con.createStatement();
         rs = stm.executeQuery(query);
         while(rs.next()){
-          System.out.println(rs.getString("Title") + " " + (rs.getString("Genre"));
+          System.out.println(rs.getString("Title") + " " + (rs.getString("Genre")));
         }
       }catch(SQLException sqle){
         System.err.println(sqle.getMessage());
@@ -61,9 +61,9 @@ public class DatabaseTest{
     }
   }
 
-  public int deleteCity(String name){
-    String SQL = "DELETE FROM municipalities" +
-      " WHERE Name='" + name + "'";
+  public int deleteMovie(String name){
+    String SQL = "DELETE FROM MovieDatabase" +
+    " WHERE Title='" + name + "'";
     Statement stm = null;
     int rows = -1;
     try{
@@ -71,34 +71,32 @@ public class DatabaseTest{
       rows = stm.executeUpdate(SQL);
     }catch(Exception e){
       System.err.println("Exception deleting " + name
-                         + " " + e.getMessage());
+      + " " + e.getMessage());
     }finally{
       closeIt(stm);
       return rows;
     }
   }
 
-  public int updateHTTPS(String name, boolean https){
-    String SQL = "UPDATE municipalities SET HTTPS=" +
-      (https?"1":"0") +
-      " WHERE Name='" + name + "'";
+  public String updateMovie(String original_title, String new_title){
+    String SQL = "UPDATE movies SET Title='" + new_title +
+    "' WHERE Title='" + original_title + "'";
     Statement stm = null;
     int rows = -1;
     try{
       stm  = con.createStatement();
       rows = stm.executeUpdate(SQL);
     }catch(Exception e){
-      System.err.println("Exception updating https for " + name
-                         + " " + e.getMessage());
+      System.err.println("Exception updating Title for " + " " + e.getMessage());
     }finally{
       closeIt(stm);
-      return rows;
+     return null;
     }
   }
 
   public void testInsert(){
-    String SQL = "INSERT INTO municipalities(Name, URL, HTTPS, Server) " +
-      "VALUES('Ingalunda stad', 'http://ingalunda.se', 0, 'IIS')";
+    String SQL = "INSERT INTO movies(Title, Genre, Rated, Director) " +
+    "VALUES('Fight Club Test', 'GenreTest', '11', 'DirectorTest')";
     Statement stm=null;
     try{
       stm = con.createStatement();
@@ -109,21 +107,21 @@ public class DatabaseTest{
       closeIt(stm);
     }
   }
-  public String fetchCity(String name){
+  public String fetchMovie(String name){
     String result = null;
     Statement stm = null;
     ResultSet rs  = null;
-    String query  = "SELECT * FROM municipalities WHERE Name='"+name+"'";
+    String query  = "SELECT * FROM MovieDatabase WHERE Title='"+name+"'";
     try{
       stm = con.createStatement();
       rs = stm.executeQuery(query);
       if(rs.next()){
-        result = rs.getString("Name") + " - " +
-          rs.getString("URL")       + " - " +
-          (rs.getBoolean("HTTPS")?"https support":"only http") + " - " +
-          rs.getString("Server");
+        result = rs.getString("Title")  + " - " +
+        rs.getString("Genre")         + " - " +
+        rs.getString("Rated")         + " - " +
+        rs.getString("Director");
       }else{
-        result = "No such city: " + name;
+        result = "No such Movie: " + name;
       }
     }catch(Exception e){
       System.err.println("Exception fetching " + name + ": " + e.getMessage());

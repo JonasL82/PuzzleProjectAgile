@@ -1,4 +1,4 @@
-package jonathan_src.utils;
+package utils.database_utils;
 import java.util.*;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
@@ -24,23 +24,29 @@ public class MyMovies implements MovieDB{
    * Fetches all municipalities from the storage as a List of Municipality objects.
    * @return All municipalities of the storage as a java.util.List&lt;Municipality&gt;
    */
-  public List<Municipality>getAllCities(){
-    ArrayList<Municipality> list = new ArrayList<Municipality>();
-    ResultSet rs = db.executeQuery("SELECT * FROM municipalities");
+
+   //String title, String prodyear, String genre, String rated, String prodcompany, String plot, String premierdate, String director
+  public List<TestMovie> getMovieDatabase(){
+    ArrayList<TestMovie> list = new ArrayList<TestMovie>();
+    ResultSet rs = db.executeQuery("SELECT * FROM MovieDatabase");
     try{
-      Municipality m=null;
+      TestMovie tm=null;
       while(rs.next()){
-        m=new Municipality(rs.getString("Name"),
-                           rs.getString("URL"),
-                           rs.getString("Server"),
-                           rs.getBoolean("HTTPS"));
-        m.setID(rs.getInt("MunicipalityID"));
-        list.add(m);
+      tm=new TestMovie(rs.getString("Title"),
+                          rs.getString("Prodyear"),
+                           rs.getString("Genre"),
+                           rs.getString("Rated"),
+                           rs.getString("Prodcompany"),
+                           rs.getString("Plot"),
+                           rs.getString("Premierdate"),
+                           rs.getString("Director"));
+      //  m.setID(rs.getInt("MunicipalityID"));
+        list.add(tm);
       }
       db.closeIt(rs);
       return list;
     }catch(Exception e){
-      System.err.println("Getting all municipalities: " + e.getMessage());
+      System.err.println("Getting all Movies: " + e.getMessage());
       db.closeIt(rs);
     }
     return null;
@@ -52,25 +58,39 @@ public class MyMovies implements MovieDB{
    * @param m The municipality to be updated.
    *
    */
-  public void updateCity(Municipality m){
-    int id = m.id();
-    String SQL="UPDATE municipalities SET HTTPS="+
-      (m.supportsHTTPS()?"1":"0") +
-      " WHERE MunicipalityID="+id;
-    System.out.println(db.executeUpdate(SQL)
-                       + " rows updated");
+  public void updateMovieYear(TestMovie tm, String new_year){
+    db.executeQuery("BEGIN TRANSACTION");
+    String title = tm.title();
+    String SQL="UPDATE MovieDatabase SET Prodyear='"+new_year+
+      "' WHERE Title='"+title+"'";
+    if (db.executeUpdate(SQL) > 1) {
+      System.out.println("Error when changing year.");
+      db.rollback();
+    }
+    else {
+      System.out.println("Movie's year changed");
+      db.commit();
+    }
   }
   /**
    * Deletes a Municipality from the storage.
    * @param m A reference to the Municipality to be deleted.
    *
    */
-  public void deleteCity(Municipality m){
-    int id = m.id();
-    String SQL="DELETE FROM municipalities"+
-      " WHERE MunicipalityID="+id;
+  public void deleteMovie(TestMovie tm, String delete_title){
+    db.executeQuery("BEGIN TRANSACTION");
+    String title = tm.title();
+    String SQL="DELETE FROM MovieDatabase WHERE Title='"+title+"'";
     System.out.println(db.executeUpdate(SQL) +
                        " rows deleted");
+      if (db.executeUpdate(SQL) > 1) {
+         System.out.println("Error when deleting.");
+         db.rollback();
+        }
+     else {
+         System.out.println("Movie deleted");
+         db.commit();
+        }
     // What if m.id() returns 0? Think about a solution!
   }
   /**
@@ -78,21 +98,36 @@ public class MyMovies implements MovieDB{
    * MunicipalityID it gets.
    * @param m The Municipality to add to the storage (database)
    */
-  public void addCity(Municipality m){
+  public void addMovie(TestMovie tm){
+    String title = tm.title();
+    String genre = tm.genre();
+    String rated = tm.rated();
+    String prodcompany = tm.prodcompany();
+    String plot = tm.plot();
+    String prodyear = tm.prodyear();
+    String premierdate = tm.premierdate();
+    String director = tm.director();
+    /*
+    (rs.getString("Title"),
+                        rs.getString("Prodyear"),
+                         rs.getString("Genre"),
+                         rs.getString("Rated"),
+                         rs.getString("Prodcompany"),
+                         rs.getString("Plot"),
+                         rs.getString("Premierdate"),
+                         rs.getString("Director"));
+    */
     //int id=m.id();
-    String name=m.name();
-    String url=m.url();
-    String server=m.server();
-    boolean https=m.supportsHTTPS();
-    String SQL="INSERT INTO municipalities"+
-      "(Name,URL,Server,HTTPS)" +
-      " VALUES('"+name+"', "+
-      "'"+url+"', " +
-      "'" + server + "', 0)";
+    /*
+    String name=db.name();
+    String url=db.url();
+    String server=db.server();
+    boolean https=db.supportsHTTPS();
+    */
+    String SQL="INSERT INTO movies (Title, Genre, Rated, Prodcompany, Plot, Prodyear, Premierdate, Director) VALUES('"+
+                title+"', '"+genre+"', '"+rated+"', '"+prodcompany+"', '"+plot+"', '"+prodyear+"', '"+premierdate+"', '"+director+"')";
     System.out.println(db.executeUpdate(SQL)+
                        " rows inserted");
-
-    int id=0;
     /* m doesn't have an ID yet. Let's find it... */
     /*
       Alternative method to get the last rowid:
@@ -102,36 +137,48 @@ public class MyMovies implements MovieDB{
       returns the last_insert_rowid() if successful or 0 otherwise.
     */
 
-    ResultSet rs = db.executeQuery("SELECT MunicipalityID"+
-                                   " FROM municipalities"+
-                                   " WHERE Name='"+name+"'");
+    //Här avslutade vi den 15 mars. FORTSÄTT HÄR!!!!!
+
+
+
+  }
+
+  public String getTitleProdyear(String title){
+    ResultSet rs = db.executeQuery("SELECT Title, Prodyear FROM movies WHERE Title LIKE '"+title+"'");
+    String results = "";
     try{
       rs.next();
-      m.setID(rs.getInt("MunicipalityID"));
+      while (rs.next()){
+        results = results + rs.getString("Title") + ", (" + rs.getString("Prodyear") + ")" + "\n";
+      }
+      //tm.setID(rs.getInt("movie_id"));
     }catch(Exception e){
       System.err.println("Getting ID: " + e.getMessage());
     }finally{
       db.closeIt(rs);
     }
+    return null;
   }
   /**
    * Fetches a Municipality by its name from the storage (database).
    * @param name The name of the Municipality to be fetched.
    * @return The named Municipality as a new Municipality object, or null if none could be fetched.
    */
-  public Municipality getByName(String name){
-    String SQL="SELECT * FROM municipalities WHERE name='"+name+"'";
+
+  /*
+  public MovieDB getByName(String name){
+    String SQL="SELECT * FROM MovieDatabase WHERE name='"+name+"'";
 
     System.out.println("DEBUG: SQL: " + SQL);
     ResultSet rs = db.executeQuery(SQL);
-    Municipality m = null;
+    MovieDB m = null;
     try{
       if(rs.next()){
-        m = new Municipality(rs.getString("Name"),
-                             rs.getString("URL"),
-                             rs.getString("Server"),
-                             rs.getBoolean("HTTPS"));
-        m.setID(rs.getInt("MunicipalityID"));
+        m = new MovieDB(rs.getString("name"),
+                             rs.getString("server"),
+                             rs.getString("url"),
+                             rs.getString("id"));
+      //  m.setID(rs.getInt("id"));
       }
       return m;
     }catch(Exception e){
@@ -141,6 +188,7 @@ public class MyMovies implements MovieDB{
     }
     return null;
   }
+  */
   /**
    * Updates the stored HTTPS for a named city. The actual SQL statement
    * being sent to the database is printed to std out as a debug message.
@@ -148,13 +196,15 @@ public class MyMovies implements MovieDB{
    * @param https The new boolean value for the named city
    * @return The number of rows affected as an int
    */
+
+  /*
   public int updateHTTPSbyName(String name, boolean https){
-    String SQL="UPDATE municipalities SET HTTPS="+(https?"1":"0")+" WHERE name='"+name+"'";
+    String SQL="UPDATE MovieDatabase SET HTTPS="+ " WHERE name='"+name+"'";
     System.out.println("DEBUG: SQL: " + SQL);
     int rows = db.executeUpdate(SQL);
     return rows;
   }
-
+  */
   /*
   // We don't want to use this safe method, since we
   // want to try to handle SQL injections ourselves...
