@@ -1,4 +1,4 @@
-package utils.database_utils;
+package mdb_util.database_utils;
 public class TestMovie{
   String title, prodyear, genre, rated, prodcompany, plot, premierdate, director;
   int movie_id;

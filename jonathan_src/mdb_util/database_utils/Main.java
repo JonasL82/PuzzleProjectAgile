@@ -1,5 +1,5 @@
-package utils.database_utils;
-import utils.database_utils.DatabaseTest;
+package mdb_util.database_utils;
+import mdb_util.database_utils.DatabaseTest;
 public class Main{
     public static void main(String[] args){
         String arg0 = args[0];

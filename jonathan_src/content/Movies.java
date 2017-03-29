@@ -1,22 +1,28 @@
 package content;
 import java.util.ArrayList;
+import java.util.HashMap;
+import account.Account;
 import people.Actors;
+import content.CastListing;
 import random.*;
 import review.Review;
+import mdb_util.database_utils.MyMovies;
 public class Movies{
 
 
-  String title, genre, language, plot, director, scriptwriter;
+  String title, genre, language, plot, director, scriptwriter, production_company;
   String release_dates;
-  byte age_limit;
-  short year;
+  String age_limit;
+  int year;
   int id_nr;
-  ArrayList<Actors> cast;
-  ArrayList<Review> reviews;
+  ArrayList<CastListing> cast;
+  HashMap<Integer, Review> reviews;
+  MyMovies database = new MyMovies();
 
     public Movies(String title, String genre, String language, String plot,
                   String director, String scriptwriter, String release_dates,
-                  byte age_limit, short year){
+                  String age_limit, String production_company,
+                   int year, int id_nr){
         //super(title,genre,language,plot,director,scriptwriter,release_dates,age_limit,year);
         //System.out.println("super called");
 
@@ -28,10 +34,11 @@ public class Movies{
         this.scriptwriter = scriptwriter;
         this.release_dates = release_dates;
         this.age_limit = age_limit;
+        this.production_company = production_company;
         this.year = year;
-        this.id_nr = RandGen.RandNum();
-        cast = new ArrayList<Actors>();
-        reviews = new ArrayList<Review>();
+        this.id_nr = id_nr; //RandGen.RandNum();
+        this.cast = database.getCastForMovie(id_nr);
+        reviews = database.getReviewsForMovie(id_nr);
 
     }
 
@@ -57,35 +64,43 @@ public class Movies{
     public int id_nr(){
       return id_nr;
     }
+
     public String release_dates(){
       return release_dates;
     }
-    public byte age_limit(){
+    public String age_limit(){
       return age_limit;
     }
-    public short year(){
+    public int year(){
       return year;
     }
-    public ArrayList<Review> reviews(){
+    public String production_company(){
+      return production_company;
+    }
+    public HashMap<Integer, Review> reviews(){
       return reviews;
     }
-    public ArrayList<Actors> cast(){
+    public ArrayList<CastListing> cast(){
       return cast;
     }
+
     //Tilläggsfunktioner
-    public void addReview(Review review){
-      reviews.add(review);
+    public void addReview(Account account, Review review){
+      reviews.put(account.getID(), review);
     }
-    public void addActorToCast(Actors a){
-      cast.add(a);
+
+    public void addActorToCast(Actors a, String character_name){ //Ändra
+      database.updateMovieAddActorToCast(this.id_nr, a.id_nr(), character_name);
+      this.cast = updateCastFromDatabase(this.cast);
     }
+
 
     //Ändringsfunktioner
     public void changeTitle(String title){
       this.title = title;
     }
     public void changeYear(int new_year){
-      this.year = (short)new_year;
+      this.year = new_year;
     }
     public void changePlot(String plot){
       this.plot = plot;
@@ -105,26 +120,30 @@ public class Movies{
     public void changeReleaseDate(String release_dates){
       this.release_dates = release_dates;
     }
-    public void changeAgeLimit(int age_limit){
-      byte new_age_limit = (byte)age_limit;
-      this.age_limit = new_age_limit;
+    public void changeAgeLimit(String age_limit){
+      this.age_limit = age_limit;
+    }
+    public ArrayList<CastListing> updateCastFromDatabase(ArrayList<CastListing> original_cast){
+      if (original_cast.size()>0) {
+        this.cast.clear();
+      }
+      ArrayList<CastListing> new_cast = database.getCastForMovie(this.id_nr);
+      return new_cast;
+    }
+    public String printCast(){
+      String cast_list = "";
+      for (int i = 0; i<cast.size(); i++) {
+        cast_list = cast_list + cast.get(i).toString() + "\n";
+      }
+      return cast_list;
     }
     @Override
-    public String toString(){
-      String movie_cast = "";
-      if (cast.isEmpty()) {
-        movie_cast = "No cast listed";
-      }
-      else{
-        for (int i = 0; i<cast.size(); i++) {
-          movie_cast = movie_cast+cast.get(i).name()+" - Role" + "\n";
-        }
-      }
+    public String toString(){ //Ändra
+
       return "Title: " + title + "\n" + "Production year: " + year + "\n" + "Genre: " + genre + "\n" +
       "Language: " + language + "\n" + "Plot: " + plot + "\n" + "Directed by: " + director + "\n"
       + "Written by: " + scriptwriter + "\n" + "Release: " + release_dates +
-       "\n" + "Age Limit: " + age_limit + "\n" + "ID Nr.: " + id_nr + "\n" + "Cast: " + (cast.isEmpty()?"":"\n") +
-       movie_cast + (cast.isEmpty()?"\n":"") + "------";
+       "\n" + "Age Limit: " + age_limit + "\n" + "ID Nr.: " + id_nr + "\n" + "Cast: " + (cast.size()>0?printCast():"None listed") + "------";
 /*
       return "Title: " + title + "\n" + "Production year: " + year + "\n" + "Genre: " + genre + "\n" +
       "Language: " + language + "\n" + "Plot: " + plot + "\n" + "Directed by: " + director + "\n"

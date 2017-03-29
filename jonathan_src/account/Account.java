@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import review.Review;
 import random.RandGen;
 import java.util.Scanner;
-import util.data_utils.DataCheckUtils;
+import mdb_util.data_utils.DataCheckUtils;
 
 public class Account{
 
@@ -20,13 +20,13 @@ public class Account{
     this.email = email;
     //id_nr = RandGen.RandNum();
   }
-  public Account(String username, String password, String email, boolean admin_status){ //För "riktiga" konton
+  public Account(String username, String password, String email, boolean admin_status, int id_nr){ //För "riktiga" konton
     this.username = username;
     this.password = password;
     this.email = email;
     this.admin_status = admin_status;
+    this.id_nr = id_nr;
     ArrayList<Review> reviews = new ArrayList<Review>();
-    id_nr = RandGen.RandNum();
   }
   /*
   public Account(String username, String password, String email,
@@ -108,9 +108,8 @@ public class Account{
   }
 
   public Movies addMovie(){
-    String title, genre, language, plot, director, scriptwriter, release_dates;
-    byte age_limit;
-    short year;
+    String title, genre, language, plot, director, scriptwriter, release_dates, production_company, age_limit;
+    int year;
     Scanner sc = new Scanner(System.in);
     System.out.println("Please enter a title:");
     title = sc.nextLine();
@@ -124,19 +123,55 @@ public class Account{
     director = sc.nextLine();
     System.out.println("Please enter the name of the screenwriter:");
     scriptwriter = sc.nextLine();
-    //cast = sc.next;
     System.out.println("Please enter a release date (YYYY-MM-DD):");
+    boolean valid_release_dates = false;
+    release_dates = "";
+    do {
+      Scanner sc3 = new Scanner(System.in);
+      release_dates = sc3.nextLine();
+      valid_release_dates = DataCheckUtils.checkDateEntry(release_dates);
+    } while (valid_release_dates==false);
     release_dates = sc.nextLine();
     System.out.println("Please enter the movie's age limit:");
-    age_limit = sc.nextByte();
+    age_limit = sc.nextLine();
+    System.out.println("Please enter the movie's production company:");
+    production_company = sc.nextLine();
     System.out.println("Please enter the movie's production year:");
-    year = sc.nextShort();
-    Movies m = new Movies(title, genre, language, plot, director, scriptwriter, release_dates, age_limit, year);
+    //year
+    //year = sc.nextInt();
+    boolean valid_prodyear = false;
+    String year_string;
+    int year_int = 0;
+    int year_miss = 0;
+    do {
+      Scanner sc3 = new Scanner(System.in);
+      if (year_int<1878 && year_miss>=1) {
+        System.out.println("There was a problem with your entry. Please re-enter");
+      }
+      year_miss++;
+      year_string=sc3.nextLine();
+      valid_prodyear = DataCheckUtils.checkProdyearForShort(year_string);
+      if (valid_prodyear==true){
+        try {
+          year_int = Integer.parseInt(year_string);
+        }catch (NumberFormatException nfe) {
+          year_int = 0;
+        }
+      }
+      else{
+        year_int = 0;
+      }
+    } while (year_int<1878 && valid_prodyear == false);
+    int movie_id = RandGen.RandNum();
+    //int cast_id = RandGen.RandNum();
+    Movies m = new Movies(title, genre, language, plot, director, scriptwriter, release_dates, age_limit,
+                          production_company, year_int, movie_id);
     return m;
     /*
-    (String title,String genre,String language,String plot,
-                  String director,String scriptwriter,String release_dates,
-                  byte age_limit,short year)
+    (String title, String genre, String language, String plot,
+                  String director, String scriptwriter, String release_dates,
+                  String age_limit, String production_company,
+                   int year, int id_nr, int cast_id)
     */
   }
 
@@ -147,7 +182,7 @@ public class Account{
   public Review createReview(int user_id, Movies movie_to_review){
     Scanner sc = new Scanner(System.in);
     String review_text;
-    byte grade;
+    int grade;
     //boolean length_OK = false;
     do{
       System.out.println("Enter your review text (max 240 characters):");
@@ -165,10 +200,10 @@ public class Account{
     */
     do{
       System.out.println("Enter your grade (1-5)");
-      grade = sc.nextByte();
+      grade = sc.nextInt();
     }while (grade>5 && grade<1);
 
-    Review review = new Review(review_text, grade, user_id, username, movie_to_review.id_nr());
+    Review review = new Review(review_text, grade, user_id, movie_to_review.id_nr(), RandGen.RandNum());
     return review;
   }
 

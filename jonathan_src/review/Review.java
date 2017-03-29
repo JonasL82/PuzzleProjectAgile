@@ -8,18 +8,17 @@ public class Review{
 
   String review_text;
   int user_id; //ID-nr för användaren som skapade recensionen
-  byte grade;
+  int grade;
   int id_nr;
   String username;
   int movie_id;
 
-  public Review(String review_text, byte grade, int user_id, String username, int movie_id){
+  public Review(String review_text, int grade, int user_id, int movie_id, int id_nr){
     this.review_text = review_text;
     this.grade = grade;
     this.user_id = user_id;
-    this.username = username;
     this.movie_id = movie_id;
-    this.id_nr = RandGen.RandNum();
+    this.id_nr = id_nr; //RandGen.RandNum();
   }
   /*
   //FLYTTAD TILL ACCOUNT
@@ -81,13 +80,30 @@ public class Review{
     return review_text;
   }
 
-  public byte grade(){
+  public int grade(){
     return grade;
   }
 
   public int user_id(){
     return user_id;
   }
+
+  public int id_nr(){
+    return id_nr;
+  }
+
+  public int movie_id(){
+    return movie_id;
+  }
+
+  public void changeText(String new_review_text){
+    this.review_text=new_review_text;
+  }
+
+  public void changeGrade(int new_review_grade){
+    this.grade = new_review_grade;
+  }
+
   @Override
   public String toString(){
     String stars = "";

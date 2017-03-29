@@ -1,4 +1,4 @@
-package utils.database_utils;
+package mdb_util.database_utils;
 import java.sql.*;
 
 public class DatabaseTest{

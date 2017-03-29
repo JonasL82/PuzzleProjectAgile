@@ -3,13 +3,17 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import content.*;
 import people.*;
-import util.data_utils.DataCheckUtils;
+import random.RandGen;
+import mdb_util.data_utils.DataCheckUtils;
+import mdb_util.database_utils.MyMovies;
 public class TestApplication {
 
   ArrayList<Account> accounts;
   public final String[] authorization_codes = {"ABCDEFG", "ZYXWVU", "A1B2C3D4"};
-  public TestApplication(){
-    accounts = new ArrayList<Account>();
+  MyMovies database;
+  public TestApplication(ArrayList<Account> accounts){
+    this.accounts = accounts;
+    this.database = new MyMovies();
   }
 
   /*  public void runApplication(){
@@ -87,20 +91,30 @@ public class TestApplication {
                            + "\n" + "3. Cancel");
       createAccountChoice = sc.nextInt();
       switch (createAccountChoice){
-        case 1: Account newUser = new Account(preAccount.getUsername(), preAccount.getPassword(), //Admin
-                                    preAccount.getEmail(), false);
+        case 1:
+                int user_account_id = 0;
+                do {
+                  user_account_id = RandGen.RandNum();
+                } while (database.getMovieIdNumbers().contains(user_account_id));
+                Account newUser = new Account(preAccount.getUsername(), preAccount.getPassword(), //User
+                                                    preAccount.getEmail(), false, user_account_id);
                 newAccount = newUser;
                 return newAccount;
-        case 2: System.out.println("Enter authorization code:"); //User
-                attempted_authorization_code = sc.nextLine();
+        case 2: System.out.println("Enter authorization code:"); //Admin
+                Scanner sc_Admin = new Scanner(System.in);
+                attempted_authorization_code = sc_Admin.nextLine();
                 for (int i = 0; i < authorization_codes.length; i++){ //Lägg till begränsat antal försök
                   if (authorization_codes[i].equals(attempted_authorization_code)){
                     found_authorization_code = true;
                   }
                 }
                 if (found_authorization_code){
+                  int admin_account_id = 0;
+                  do {
+                    admin_account_id = RandGen.RandNum();
+                  } while (database.getMovieIdNumbers().contains(admin_account_id));
                   Account newAdmin = new Account(preAccount.getUsername(), preAccount.getPassword(),
-                                              preAccount.getEmail(), true);
+                                              preAccount.getEmail(), true, admin_account_id);
                   newAccount = newAdmin;
                   return newAccount;
                 }
@@ -230,6 +244,7 @@ public class TestApplication {
               System.out.println("Enter your new password");
               String new_password = sc2.nextLine();
               active_account.changePassword(new_password);
+              database.updateAccountPassword(active_account, new_password);
               for(int i = 0; i<accounts.size(); i++){
                 if (accounts.get(i).getID()==active_account.getID()){
                   accounts.set(i, active_account);
@@ -254,6 +269,7 @@ public class TestApplication {
             if(email_not_blank==true && email_not_null==true){
               active_account.changeEmail(new_email);
               System.out.println("Email changed to " + new_email);
+              database.updateAccountEmail(active_account, new_email);
             }
             else{
               System.out.println("Invalid email entry");
@@ -354,6 +370,7 @@ public class TestApplication {
           } while (new_title.equals("") || new_title.equals(null));
 
           edit_movie.changeTitle(new_title);
+          database.updateMovieTitle(edit_movie, new_title);
           System.out.println("Title changed.");
           break;
         case 2: //Year
@@ -383,6 +400,7 @@ public class TestApplication {
             }
           } while (new_year_int<1878 && valid_prodyear == false);
           edit_movie.changeYear(new_year_int);
+          database.updateMovieYear(edit_movie, new_year_int);
           System.out.println("Year changed.");
           break;
         case 3: //Genre
@@ -394,6 +412,7 @@ public class TestApplication {
             new_genre = sc3.nextLine();
           } while (new_genre.equals("") || new_genre.equals(null));
           edit_movie.changeGenre(new_genre);
+          database.updateMovieGenre(edit_movie, new_genre);
           System.out.println("Genre changed.");
           break;
         case 4: //Add Cast Member
@@ -413,7 +432,13 @@ public class TestApplication {
           for (int j = 0; j < actors.size(); j++){
             if (actors.get(j).id_nr() == add_id_castmember){
               found_cast_actor = true;
-              edit_movie.addActorToCast(actors.get(j));
+              Scanner cast_add_sc = new Scanner(System.in);
+              System.out.println("Please write the name of the actor's character: ");
+              String cast_character_name = "";
+              do {
+                cast_add_sc.nextLine();
+              } while (cast_character_name.equals("") || cast_character_name.equals(null));
+              edit_movie.addActorToCast(actors.get(j), cast_character_name);
               System.out.println("Actor added to cast");
             }
           }
@@ -421,24 +446,28 @@ public class TestApplication {
 
         case 5: //Remove Cast Member
           if (edit_movie.cast().size()>0) {
-            for (int i = 0; i<edit_movie.cast().size(); i++){
-              System.out.println(edit_movie.cast().get(i).name()+", DOB: " +
-              edit_movie.cast().get(i).date_of_birth() + ", ID: " + edit_movie.cast().get(i).id_nr());
+            for (int i = 0; i<edit_movie.cast().size(); i++) {
+              System.out.println(edit_movie.cast().get(i).actor().name() + " (ID: "+edit_movie.cast().get(i).actor().id_nr()+")" + " - "
+                                                                            + edit_movie.cast().get(i).character_name() + "\n");
             }
-            System.out.println("Enter the ID of the cast member to be removed");
-            boolean found_castmember_remove = false;
-            int remove_id_castmember;
+            System.out.println("Please enter the ID nr of the cast member to remove");
+            Scanner cast_remove_sc = new Scanner(System.in);
+            int cast_remove_id = 0;
             do {
-              remove_id_castmember = sc2.nextInt();
-              if(remove_id_castmember<10000 || remove_id_castmember>99999){
-                System.out.println("Invalid ID number");
-              }
-            } while (remove_id_castmember<10000 && remove_id_castmember>99999);
-            for (int j = 0; j < edit_movie.cast().size(); j++){
-              if (edit_movie.cast().get(j).id_nr() == remove_id_castmember){
+              cast_remove_id = cast_remove_sc.nextInt();
+            } while (cast_remove_id<=0);
+            boolean found_castmember_remove = false;
+            Actors delete_from_cast_actor = null;
+            String delete_from_cast_charactername = "";
+            for (int j = 0; j<edit_movie.cast().size(); j++) {
+              if (edit_movie.cast().get(j).actor().id_nr() == cast_remove_id) {
                 found_castmember_remove = true;
-                edit_movie.cast().remove(j);
+                delete_from_cast_charactername = edit_movie.cast().get(j).character_name();
               }
+            }
+            if (found_castmember_remove == true) {
+              database.updateMovieDeleteActorFromCast(edit_movie, delete_from_cast_actor, delete_from_cast_charactername);
+              edit_movie.updateCastFromDatabase(edit_movie.cast());
             }
           }
           else {
@@ -454,6 +483,7 @@ public class TestApplication {
             new_director = sc3.nextLine();
           } while (new_director.equals("") || new_director.equals(null));
           edit_movie.changeDirector(new_director);
+          database.updateMovieDirector(edit_movie, new_director);
           System.out.println("Director changed.");
           break;
         case 7: //Change scriptwriter
@@ -465,6 +495,7 @@ public class TestApplication {
             new_scriptwriter = sc3.nextLine();
           } while (new_scriptwriter.equals("") || new_scriptwriter.equals(null));
           edit_movie.changeScriptwriter(new_scriptwriter);
+          database.updateMovieScreenwriter(edit_movie, new_scriptwriter);
           System.out.println("Screenwriter changed.");
           break;
         case 8: //Change plot
@@ -476,6 +507,7 @@ public class TestApplication {
             new_plot = sc3.nextLine();
           }while(new_plot.length()>240 || new_plot.length()<1);
           edit_movie.changePlot(new_plot);
+          database.updateMoviePlot(edit_movie, new_plot);
           System.out.println("Plot changed.");
           break;
         case 9: //Change release date
@@ -489,17 +521,19 @@ public class TestApplication {
             new_release_ready = DataCheckUtils.checkDateEntry(new_release);
           } while (new_release_ready == false);
           edit_movie.changeReleaseDate(new_release);
+          database.updateMovieReleaseDate(edit_movie, new_release);
           System.out.println("Release date changed.");
           break;
         case 10: //Change age limit
           System.out.println("Current age limit: " + edit_movie.age_limit());
           System.out.print("New age limit: ");
-          int new_age_limit;
+          String new_age_limit;
           do {
             Scanner sc3 = new Scanner(System.in);
-            new_age_limit = sc3.nextInt();
-          } while (new_age_limit>90 && new_age_limit<0);
+            new_age_limit = sc3.nextLine();
+          } while (Integer.parseInt(new_age_limit)>90 && Integer.parseInt(new_age_limit)<0);
           edit_movie.changeAgeLimit(new_age_limit);
+          database.updateMovieAgeLimit(edit_movie, new_age_limit);
           System.out.println("Age limit changed.");
           break;
         case 11: //Cancel
@@ -539,6 +573,7 @@ public class TestApplication {
             }
           } while (new_name.equals(null) || new_name.equals(""));
           edit_actor.changeName(new_name);
+          database.updateActorName(edit_actor, new_name);
           break;
         case 2: //Change date of birth
           System.out.println("Current date of birth: " + edit_actor.date_of_birth());
@@ -551,6 +586,7 @@ public class TestApplication {
             }
           } while (new_date_of_birth.equals(null) || new_date_of_birth.equals(""));
           edit_actor.changeDateOfBirth(new_date_of_birth);
+          database.updateActorDateOfBirth(edit_actor, new_date_of_birth);
           break;
         case 3: //Change place of birth
           System.out.println("Current place of birth: " + edit_actor.birthplace());
@@ -563,6 +599,7 @@ public class TestApplication {
             }
           } while (new_place_of_birth.equals(null) || new_place_of_birth.equals(""));
           edit_actor.changeBirthplace(new_place_of_birth);
+          database.updateActorBirthplace(edit_actor, new_place_of_birth);
           break;
         case 4: //Cancel
           System.out.println("Returning to main menu");

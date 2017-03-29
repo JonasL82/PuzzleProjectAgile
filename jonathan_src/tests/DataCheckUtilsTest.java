@@ -1,5 +1,5 @@
 package tests;
-import util.data_utils.DataCheckUtils;
+import mdb_util.data_utils.DataCheckUtils;
 public class DataCheckUtilsTest{
   public static void main(String[] args) {
     boolean checkProdyearForShortWorks;

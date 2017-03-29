@@ -4,48 +4,59 @@ import content.*;
 import people.*;
 import random.*;
 import review.*;
+import mdb_util.database_utils.*;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 
 public class TestMovieDatabase{
   public static void main(String[] args) {
+
+    //JDBC-relaterat
+    //Var tidigare "MovieDB database = new MyMovies();"
+    MyMovies database = new MyMovies();
+
     boolean logged_in = false; //Avser inloggningsfunktion
-    boolean admin = false; //--""--
+    boolean admin = false;
     boolean running = true;
     final String SEPARATOR = "------------";
-    int choice; //för menyn
-    ArrayList<Movies> movies = new ArrayList<>();
-    ArrayList<Actors> actors = new ArrayList<Actors>();
-    TestApplication ta = new TestApplication();
+    int choice = 0; //för menyn
+    ArrayList<Movies> movies = database.getMovieDatabase();
+    ArrayList<Actors> actors = database.getActorsFromDatabase();
+    ArrayList<Account> accounts = database.getAccountsFromDatabase();
+    TestApplication ta = new TestApplication(accounts);
     Scanner sc = new Scanner(System.in);
-    Account start_account = new Account("standard", "!#¤%&/()", "none@email.com");
-    ta.addCreatedAccount(start_account);
-    Account active_account = start_account;
+    //Account start_account = new Account("standard", "!#¤%&/()", "none@email.com");
+    //ta.addCreatedAccount(start_account);
+    Account active_account = database.getStandardAccount();
 
     //Demonstrationsinstanser
+    /*
     Account test_admin = new Account("DemoAdmin", "aaaeee", "who@cares.net", true);
     ta.addCreatedAccount(test_admin);
     Account test_user = new Account("DemoUser", "bbbfff", "user@iths.se", false);
     ta.addCreatedAccount(test_user);
+    */
+    /*
     byte standard_age = 11;
     short r1 = 1940; short r2 = 2016;
     Movies mo1 = new Movies("Citizen Kane", "Drama", "English",
      "A journalist searches for the meaning of a dead millionaire's last words",
-    "Orson Welles", "Orson Welles", "1941", standard_age, r1);
+    "Orson Welles", "Orson Welles", "1941", "PG", r1);
     Movies mo2 = new Movies("Gods of Egypt", "Fantasy", "English", "Blablabla",
-                            "Unknown", "Unknown", "2016", standard_age, r2);
+                            "Unknown", "Unknown", "2016", "PG-13", r2);
     movies.add(mo1); movies.add(mo2);
     byte review_byte = 2;
     Review test_review = new Review("This movie sucks", review_byte, test_user.getID(),
                                     test_user.getUsername(), mo2.id_nr());
-    mo2.addReview(test_review);
+    //mo2.addReview(test_review);
     Actors ac1 = new Actors("Orson Welles", "USA", "1915-05-06");
     Actors r_gosling = new Actors("Ryan Gosling", "Canada", "1978/05/01");
     actors.add(r_gosling);
     Actors e_stone = new Actors("Emma Stone", "USA", "1980/06/03");
     actors.add(e_stone);
-    active_account = test_admin;
+    //active_account = start_account;
+    */
 
     System.out.println("Welcome to IthsMDB!");
     System.out.println("Product of PUZZLE" + "\n" + "------");
@@ -74,11 +85,16 @@ public class TestMovieDatabase{
       System.out.println("12. Log Out");
       System.out.println("13. Alter Movie Information");
       System.out.println("14. Alter Actor Information");
-      System.out.println("15. Exit");
+      System.out.println("15. Search for Movie by Title");
+      System.out.println("16. Search for Actor by Name");
+      System.out.println("17. Exit");
       //KOLLA UPP JAVA KEYEVENT:
       //https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html
       //try{
+
         choice = sc.nextInt();
+
+
       /*}catch(InputMismatchException ime){ //försök till buggfixning; ska göra klart senare
         System.out.println("Invalid entry. Try again");
         choice = sc.nextInt();
@@ -107,6 +123,7 @@ public class TestMovieDatabase{
             Account temp = ta.createAccount(); //Objekt skapas som vanliga accounts
             if(temp!=null){
               ta.addCreatedAccount(temp);
+              database.addAccountToDatabase(temp);
             }
             else{
               System.out.println("Account creation cancelled");
@@ -124,11 +141,39 @@ public class TestMovieDatabase{
         case 4: //List Movies
           System.out.println("Movies:");
           for (int i = 0; i < movies.size(); i++){
-            System.out.println(movies.get(i));
-            if (movies.get(i).reviews().size()>0){
+            System.out.println(movies.get(i).title() + " (" + movies.get(i).year() + "). ID: " + movies.get(i).id_nr());
+          }
+          int id_view_movie;
+          //Movie found_movie_print = null;
+          boolean found_view_movie = false;
+          System.out.println("Enter the ID of the movie to view:");
+          id_view_movie = sc.nextInt();
+          for (int j = 0; j<movies.size(); j++) {
+            if (movies.get(j).id_nr()==id_view_movie) {
+              found_view_movie = true;
+              System.out.println(movies.get(j));
+            }
+            //Blir fel vid utskrift; FIXA!!!!!!
+            if (found_view_movie) {
+              if (movies.get(j).reviews().size()>0){
+                System.out.println("Reviews:");
+                for (int k = 0; k<movies.get(j).reviews().size(); k++){
+                  System.out.println(SEPARATOR + "\n" + movies.get(j).reviews().get(k));
+                }
+
+              }
+              else if (movies.get(j).reviews().isEmpty()){
+                System.out.println("No reviews" + "\n" + SEPARATOR);
+              }
+            }
+          }
+          /*
+          for (int j = 0; j < movies.size(); j++){
+            System.out.println(movies.get(j));
+            if (movies.get(j).reviews().size()>0){
               System.out.println("Reviews:");
-              for (int j = 0; j<movies.get(i).reviews().size(); j++){
-                System.out.println(SEPARATOR + "\n" + movies.get(i).reviews().get(j));
+              for (int k = 0; k<movies.get(i).reviews().size(); k++){
+                System.out.println(SEPARATOR + "\n" + movies.get(j).reviews().get(k));
               }
 
             }
@@ -136,6 +181,7 @@ public class TestMovieDatabase{
               System.out.println("No reviews" + "\n" + SEPARATOR);
             }
           }
+          */
           System.out.println(SEPARATOR);
           break;
         case 5: //List Actors
@@ -163,6 +209,7 @@ public class TestMovieDatabase{
           if (admin == true){
             Actors a = active_account.addActor();
             actors.add(a);
+            database.addActorToDatabase(a);
           }
           else System.out.println("You are not authorized");
           System.out.println(SEPARATOR);
@@ -179,6 +226,7 @@ public class TestMovieDatabase{
             for (int j = 0; j < movies.size(); j++){
               if (movies.get(j).id_nr() == remove_id_movie){
                 found_movie = true;
+                database.deleteMovie(movies.get(j));
                 movies.remove(j);
               }
             }
@@ -204,6 +252,7 @@ public class TestMovieDatabase{
             for (int j = 0; j < actors.size(); j++){
               if (actors.get(j).id_nr() == remove_id_actor){
                 found_actor = true;
+                database.deleteActor(actors.get(j));
                 actors.remove(j);
               }
             }
@@ -231,7 +280,8 @@ public class TestMovieDatabase{
             if (movies.get(j).id_nr() == review_id_movie){
               found_review_movie = true;
               Review temp_review = active_account.createReview(active_account.getID(), movies.get(j));
-              movies.get(j).addReview(temp_review);
+              movies.get(j).addReview(active_account, temp_review);
+              database.addReviewToDatabase(temp_review, movies.get(j), active_account);
             }
           }
           if (found_review_movie){
@@ -250,7 +300,7 @@ public class TestMovieDatabase{
           System.out.println("Logging out");
           logged_in = false;
           admin = false;
-          active_account = start_account;
+          active_account = database.getStandardAccount();
         }
         else System.out.println("No account is currently logged in");
           System.out.println(SEPARATOR);
@@ -312,7 +362,17 @@ public class TestMovieDatabase{
             System.out.println("You are not authorized for this function");
           }
           break;
-        case 15:
+        case 15: //Search for Movie by Title
+          Scanner sc2 = new Scanner(System.in);
+          System.out.println("Enter movie title to search for:");
+          String search_movie_title = sc2.nextLine();
+          break;
+        case 16: //Search for Actor by Name
+          Scanner sc3 = new Scanner(System.in);
+          System.out.println("Enter name to search for:");
+          String search_actor_name = sc3.nextLine();
+          break;
+        case 17: //Avsluta
           System.out.println("Bye-bye!");
           running = false;
           break;

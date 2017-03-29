@@ -19,6 +19,14 @@ public class Actors {
         this.id_nr = RandGen.RandNum();
     }
 
+    public Actors(String name, String birthplace, String date_of_birth, int id_nr){
+      this.name = name;
+      this.birthplace = birthplace;
+      this.date_of_birth = date_of_birth;
+      this.id_nr = id_nr;
+      this.performances = new ArrayList<Movies>();
+    }
+
     public String name(){
       return name;
     }

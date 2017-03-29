@@ -1,4 +1,4 @@
-package utils.database_utils;
+package mdb_util.database_utils;
 import java.util.Scanner;
 import java.awt.*; //För KeyEvent
 public class EnterDataUtils{

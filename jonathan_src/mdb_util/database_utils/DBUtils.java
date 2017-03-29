@@ -1,11 +1,11 @@
-package utils.database_utils;
+package mdb_util.database_utils;
 import java.sql.*;
 import java.io.File;
 
 public class DBUtils{
 
-  private final static String DB_CONN_STR="jdbc:sqlite:MovieDatabase";
-    private final static String DB_FILE="MovieDatabase"; // Used for debugging
+  private final static String DB_CONN_STR="jdbc:sqlite:PuzzleProjectMovieDatabase";
+    private final static String DB_FILE="PuzzleProjectMovieDatabase"; // Used for debugging
     static{
       try{
         Class.forName("org.sqlite.JDBC");
@@ -138,8 +138,24 @@ public class DBUtils{
           System.err.print("Error issuing commit: ");
           System.err.println(sqle);
         }
-      }
+    }
 
+    /*
+    public void beginTransaction(){
+      Statement stm = null;
+      String transaction_command = "BEGIN TRANSACTION";
+      try {
+        if (hasConnection()) {
+          stm = con.createStatement();
+          stm.executeUpdate(transaction_command);
+        }
+      }catch (SQLException sqle) {
+        System.err.println("Error issuing transaction: ");
+        System.err.println(sqle);
+      }
+    }
+
+    */
 
     public void rollback(){
       try{
